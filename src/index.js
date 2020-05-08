@@ -1,17 +1,23 @@
 import Chess from 'chess.js';
+const last = (a) => a && a.length && a[a.length-1];
 
 const _fenify = (fen, moves) => {
     const chess = new Chess(fen);
 
     return moves.map(m => {
-        chess.move(m.move);
+        const lastFen = chess.fen();
+        const lastMove = chess.move(m.move.replace('...', ''));
+        if (!lastMove) throw new Error('invalid move, ' + m.move + ', fen: ', lastFen);
+
         const fen = chess.fen();
         return {
             ...m,
+            from: lastMove.from, 
+            to: lastMove.to,
             fen,
             ravs: m.ravs && m.ravs.map(rav => ({
                 ...rav, 
-                moves: _fenify(fen, rav.moves)
+                moves: _fenify(lastFen, rav.moves)
             }))
         };
     });
